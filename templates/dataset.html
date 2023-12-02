@@ -1,0 +1,294 @@
+{% include 'partition/header.html' %}
+{% include 'partition/navbar.html'%}
+
+<div class="content-wrapper">
+
+  <!-- Modal ADD -->
+  <div class="modal fade" id="modalAdd" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tambah Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+          <form id="addDataForm" method="POST">
+            <div class="modal-body">
+                <!-- Form for adding data -->                                    
+                    <div class="form-group">
+                        <label for="open">Open</label>
+                        <input type="text" class="form-control" id="open" name="open" placeholder="Open">
+                    </div>
+                    <div class="form-group">
+                      <label for="high">High</label>
+                      <input type="text" class="form-control" id="high" name="high" placeholder="High">
+                    </div>
+                    <div class="form-group">
+                      <label for="low">Low</label>
+                      <input type="text" class="form-control" id="low" name="low" placeholder="Low">
+                    </div>
+                    <div class="form-group">
+                      <label for="close">Close (Target/Label)</label>
+                      <input type="text" class="form-control" id="close" name="close" placeholder="Close">
+                    </div>
+                    <!-- Add more form fields as needed -->                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                <button type="submit" class="btn btn-primary" id="saveData">Simpan</button>
+            </div>
+          </form>
+        </div>
+    </div>
+  </div>
+
+  <!-- Modal IMPORT -->
+  <div class="modal fade" id="modalImport" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Import Data .csv</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+          <form id="importDataForm" method="POST" enctype="multipart/form-data">
+            <div class="modal-body">              
+                <div class="form-group">
+                    <label for="file">Choose a CSV file:</label>
+                    <input type="file" class="form-control-file" id="file" name="file" accept=".csv">
+                </div>
+                                       
+            </div>
+            <div class="modal-footer">
+              <input type="hidden" id="fileExtension" name="fileExtension" value="">
+              <button type="submit" class="btn btn-success">Import CSV</button>  
+            </div>
+          </form>
+        </div>
+    </div>
+  </div>
+  
+  <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Dataset</h1>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <section class="content">
+      <div class="container-fluid">
+          <div class="row">
+              <div class="col-12">
+                  <div class="card">
+                      <div class="card-header">
+                        <h3 class="card-title">List Dataset</h3>
+                      </div>
+                      <!-- /.card-header -->
+                      <div class="card-body">
+                        <div class="d-flex justify-content-start">
+                          <div class="col-2">                            
+                              <button id="btnAdd" type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modalAdd">
+                                <i class="fa fa-plus"></i> Tambah
+                              </button>                                                                                                                                         
+                          </div>  
+                          <div class="col-2">  
+                              <button id="btnImport" type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#modalImport">
+                                <i class="fa fa-file-excel"></i> Import csv
+                              </button> 
+                          </div>                          
+                        </div>                                                 
+                        <br>                        
+                        <table id="example1" class="table table-bordered table-striped">
+                          <thead>
+                          <tr>                              
+                            <th>Open</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Close</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {% for res in header_data['result'] %}                            
+                          <tr>                                                            
+                            <td>{{res[2]}}</td>
+                            <td>{{res[3]}}</td>
+                            <td>{{res[4]}}</td>
+                            <td>{{res[5]}}</td>
+                          </tr>                         
+                          {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                      <!-- /.card-body -->
+                    </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+</div>
+
+{% include 'partition/footer.html' %}
+
+<script>
+    $(function () {
+      $("#example1").DataTable({
+        "paging": true,
+        "searching": false,
+        "ordering": true,
+        "info": true,
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "buttons": ["csv", "excel", "pdf", "print"]
+      }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+
+      var Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 1500
+      });
+
+      $('#addDataForm').submit(function (event) {
+            event.preventDefault();                     
+
+            // Get data from the form            
+            var open = $('#open').val();
+            var high = $('#high').val();
+            var low = $('#low').val();
+            var close = $('#close').val();
+
+            // Send data to the server (you can use AJAX or a form submission)
+            $.ajax({
+                type: 'POST',
+                url: '{{ url_for("add_data") }}', // URL for the Flask route to handle data insertion
+                data: {                    
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close
+                    // Add more form fields as needed
+                },
+                success: function (response) {
+                    if (response.status === 'success') {                        
+                        $('#modalAdd').modal('hide');                        
+
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Berhasil Tambah Data'
+                        });
+
+                        // Reload the page after 3 seconds
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Handle the error message                        
+                        Toast.fire({
+                            icon: 'error',
+                            title: response.message
+                        });
+
+                        // Reload the page after 3 seconds
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    }
+                },
+                error: function (error) {
+                  $('#modalAdd').modal('hide');                        
+
+                  Toast.fire({
+                      icon: 'error',
+                      title: error.message
+                  });                   
+                }
+            });
+      });
+
+      $('#importDataForm').submit(function(event){
+        var fileInput = document.getElementById("file");
+        var fileExtensionInput = document.getElementById("fileExtension");       
+        var file = fileInput.files[0];
+
+        if (file) {            
+            var fileExtension = file.name.split('.').pop().toLowerCase();
+
+            if (fileExtension === "csv") {                
+                fileExtensionInput.value = fileExtension;
+                
+                var formData = new FormData(this);
+                formData.append("file", file);
+
+                $.ajax({
+                  type: "POST",
+                  url: "/import_data",
+                  data: formData,
+                  processData: false,
+                  contentType: false,
+                  success: function (response) {                  
+                    if (response.status === "success") {
+                      $('#modalImport').modal('hide');                        
+
+                      Toast.fire({
+                          icon: 'success',
+                          title: 'Berhasil Import Data'
+                      });
+
+                      // Reload the page after 3 seconds
+                      setTimeout(function () {
+                          location.reload();
+                      }, 1500);
+                    } else {                        
+                        Toast.fire({
+                            icon: 'error',
+                            title: response.message
+                        });
+
+                        // Reload the page after 3 seconds
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    }
+                  },
+                  error: function (error) {                      
+                      $('#modalImport').modal('hide');                        
+
+                      Toast.fire({
+                          icon: 'error',
+                          title: error.message
+                      });  
+                  }
+                });
+
+                return false;
+            } else {                
+                $('#modalImport').modal('hide');                        
+
+                Toast.fire({
+                    icon: 'error',
+                    title: 'File tidak support'
+                }); 
+                return false;
+            }
+        } else {            
+          $('#modalImport').modal('hide');                        
+
+          Toast.fire({
+              icon: 'error',
+              title: 'File tidak boleh null'
+          }); 
+          return false;
+        }
+        
+      });
+
+
+    });
+</script>

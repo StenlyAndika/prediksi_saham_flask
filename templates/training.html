@@ -1,0 +1,74 @@
+{% include 'partition/header.html' %}
+{% include 'partition/navbar.html'%}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Training Data</h1>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">                
+                <div class="col-md-8">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                          <h3 class="card-title">Highlight Dataset</h3>
+                        </div>                        
+                        <form>
+                          <div class="card-body">
+                            <table id="example1" class="table table-bordered table-striped">
+                                <thead>
+                                <tr>                              
+                                  <th>Open</th>
+                                  <th>High</th>
+                                  <th>Low</th>
+                                  <th>Close</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for res in header_data['result'] %}                            
+                                <tr>                                                            
+                                  <td>{{res[2]}}</td>
+                                  <td>{{res[3]}}</td>
+                                  <td>{{res[4]}}</td>
+                                  <td>{{res[5]}}</td>
+                                </tr>                         
+                                {% endfor %}
+                                </tbody>
+                              </table>
+                            <!-- <div class="form-check">
+                              <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                              <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                            </div> -->
+                          </div>
+                          <!-- /.card-body -->
+                        </form>
+                    </div>
+                </div>                
+            </div>
+        </div>
+    </section>
+</div>
+
+{% include 'partition/footer.html' %}
+
+<script>
+    $(function () {
+        $('#example1').DataTable({
+            "paging": true,
+            "lengthChange": false,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+        });
+
+    });
+</script>
